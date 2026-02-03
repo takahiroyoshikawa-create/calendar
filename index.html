@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>子供の予定管理カレンダー</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- FullCalendar CSS -->
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css' rel='stylesheet' />
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📅 子供の予定管理</h1>
+        </header>
+
+        <!-- 子供選択タブ -->
+        <div class="kids-tabs">
+            <button class="kid-tab active" data-kid="all">全員</button>
+            <button class="kid-tab" data-kid="kid1" style="border-left: 4px solid #FF6B6B;">太郎</button>
+            <button class="kid-tab" data-kid="kid2" style="border-left: 4px solid #4ECDC4;">花子</button>
+            <button class="kid-tab" data-kid="kid3" style="border-left: 4px solid #95E1D3;">次郎</button>
+        </div>
+
+        <!-- iCal同期設定 -->
+        <div class="sync-section">
+            <button id="toggleSync" class="btn-secondary">🔄 iCal同期設定</button>
+            <div id="syncPanel" class="sync-panel hidden">
+                <h3>iCalendar URL設定</h3>
+                <div class="sync-input-group">
+                    <label>太郎のカレンダーURL:</label>
+                    <input type="url" id="icalUrl1" placeholder="https://calendar.google.com/...">
+                    <button onclick="syncCalendar('kid1')">同期</button>
+                </div>
+                <div class="sync-input-group">
+                    <label>花子のカレンダーURL:</label>
+                    <input type="url" id="icalUrl2" placeholder="https://calendar.google.com/...">
+                    <button onclick="syncCalendar('kid2')">同期</button>
+                </div>
+                <div class="sync-input-group">
+                    <label>次郎のカレンダーURL:</label>
+                    <input type="url" id="icalUrl3" placeholder="https://calendar.google.com/...">
+                    <button onclick="syncCalendar('kid3')">同期</button>
+                </div>
+                <p class="sync-note">※ Google カレンダーの場合：設定 → カレンダーの統合 → 「iCal形式の非公開URL」をコピー</p>
+            </div>
+        </div>
+
+        <!-- 予定追加ボタン -->
+        <div class="action-buttons">
+            <button id="addEventBtn" class="btn-primary">➕ 予定を追加</button>
+        </div>
+
+        <!-- カレンダー -->
+        <div id="calendar"></div>
+
+        <!-- 予定追加/編集モーダル -->
+        <div id="eventModal" class="modal hidden">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2 id="modalTitle">予定を追加</h2>
+                <form id="eventForm">
+                    <div class="form-group">
+                        <label>子供:</label>
+                        <select id="eventKid" required>
+                            <option value="kid1">太郎</option>
+                            <option value="kid2">花子</option>
+                            <option value="kid3">次郎</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>タイトル:</label>
+                        <input type="text" id="eventTitle" required placeholder="例: ピアノ教室">
+                    </div>
+                    <div class="form-group">
+                        <label>開始日時:</label>
+                        <input type="datetime-local" id="eventStart" required>
+                    </div>
+                    <div class="form-group">
+                        <label>終了日時:</label>
+                        <input type="datetime-local" id="eventEnd" required>
+                    </div>
+                    <div class="form-group">
+                        <label>メモ:</label>
+                        <textarea id="eventDescription" rows="3" placeholder="持ち物、場所など"></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">保存</button>
+                        <button type="button" id="deleteEventBtn" class="btn-danger hidden">削除</button>
+                        <button type="button" class="btn-secondary" onclick="closeModal()">キャンセル</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- FullCalendar JS -->
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
+    <!-- iCal.js for parsing iCal files -->
+    <script src='https://cdn.jsdelivr.net/npm/ical.js@1.5.0/build/ical.min.js'></script>
+    <script src="ical-sync.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
