@@ -14,9 +14,12 @@ let currentEvent = null;
 const STORAGE_KEY = 'kidsCalendarEvents';
 const ICAL_URLS_KEY = 'kidsCalendarIcalUrls';
 
-// 初期化
+// 初期化（修正版）
 document.addEventListener('DOMContentLoaded', function() {
-    initCalendar();
+    // 認証チェックは auth.js で行われるため、ここでは条件付きで初期化
+    if (isSessionValid()) {
+        initCalendar();
+    }
     initEventListeners();
     loadIcalUrls();
 });
