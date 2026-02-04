@@ -309,3 +309,458 @@ header h1 {
         flex-direction: column;
     }
 }
+/* ログイン画面 */
+.login-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
+
+.login-container {
+    background: white;
+    border-radius: 20px;
+    padding: 40px;
+    width: 90%;
+    max-width: 450px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.login-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.login-header h1 {
+    color: #333;
+    font-size: 2em;
+    margin-bottom: 10px;
+}
+
+.login-header p {
+    color: #666;
+    font-size: 1em;
+}
+
+.login-form {
+    margin-bottom: 20px;
+}
+
+.login-form .form-group {
+    margin-bottom: 20px;
+}
+
+.login-form label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #555;
+}
+
+.login-form input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: border-color 0.3s;
+}
+
+.login-form input:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.login-form small {
+    display: block;
+    margin-top: 5px;
+    color: #888;
+    font-size: 12px;
+}
+
+.btn-block {
+    width: 100%;
+    padding: 14px;
+    font-size: 16px;
+}
+
+.error-message {
+    color: #dc3545;
+    background: #ffe6e6;
+    padding: 10px 15px;
+    border-radius: 5px;
+    margin-top: 15px;
+    text-align: center;
+    font-size: 14px;
+}
+
+.login-footer {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.btn-link {
+    background: none;
+    border: none;
+    color: #667eea;
+    cursor: pointer;
+    font-size: 14px;
+    text-decoration: underline;
+    padding: 5px;
+}
+
+.btn-link:hover {
+    color: #5568d3;
+}
+
+/* ヘッダー調整 */
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.btn-logout {
+    background: #dc3545;
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-logout:hover {
+    background: #c82333;
+    transform: translateY(-2px);
+}
+
+/* レスポンシブ対応（ログイン画面） */
+@media (max-width: 768px) {
+    .login-container {
+        padding: 30px 20px;
+    }
+
+    .login-header h1 {
+        font-size: 1.5em;
+    }
+
+    .header-content {
+        flex-direction: column;
+        gap: 15px;
+        align-items: flex-start;
+    }
+
+    .header-content h1 {
+        font-size: 1.5em;
+    }
+
+    .btn-logout {
+        width: 100%;
+    }
+}
+
+/* 同期セクション追加スタイル */
+.sync-info {
+    background: #e3f2fd;
+    padding: 10px 15px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    font-size: 14px;
+    color: #1976d2;
+}
+
+.sync-actions {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.btn-sync-all {
+    background: #4CAF50;
+    color: white;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-sync-all:hover {
+    background: #45a049;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+}
+
+.sync-help {
+    margin-top: 25px;
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.sync-help h4 {
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.sync-help details {
+    margin-bottom: 10px;
+    border: 1px solid #e0e0e0;
+    border-radius: 5px;
+    padding: 10px;
+    background: white;
+}
+
+.sync-help summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: #667eea;
+    padding: 5px;
+}
+
+.sync-help summary:hover {
+    color: #5568d3;
+}
+
+.sync-help ol {
+    margin-top: 10px;
+    margin-left: 20px;
+}
+
+.sync-help li {
+    margin-bottom: 5px;
+    font-size: 14px;
+    color: #555;
+}
+
+/* 同期ボタンの状態 */
+.sync-input-group button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+/* ヘッダーアクション */
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.auto-sync-status {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    font-size: 12px;
+}
+
+.sync-indicator {
+    font-weight: 600;
+    color: #333;
+}
+
+.last-sync-time {
+    color: #666;
+    font-size: 11px;
+    margin-top: 2px;
+}
+
+/* 自動同期設定 */
+.auto-sync-settings {
+    background: #f0f7ff;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    border: 2px solid #667eea;
+}
+
+.auto-sync-settings h4 {
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.auto-sync-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+/* トグルスイッチ */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 24px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: #4CAF50;
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+
+.sync-interval-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.sync-interval-group label {
+    font-weight: 600;
+    min-width: 80px;
+}
+
+.sync-interval-group select {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+/* 子供ごとのカレンダーセクション */
+.kid-calendar-section {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+.kid-calendar-section h4 {
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.url-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.btn-add-url {
+    background: #667eea;
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-add-url:hover {
+    background: #5568d3;
+}
+
+.btn-remove {
+    background: #dc3545;
+    color: white;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-remove:hover {
+    background: #c82333;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+    .header-actions {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+
+    .auto-sync-status {
+        align-items: flex-start;
+    }
+
+    .sync-input-group {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .sync-input-group input {
+        min-width: auto;
+    }
+
+    .sync-input-group button {
+        width: 100%;
+    }
+}
+
+/* データクリアボタン */
+.btn-danger-outline {
+    background: white;
+    color: #dc3545;
+    padding: 12px 30px;
+    border: 2px solid #dc3545;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-danger-outline:hover {
+    background: #dc3545;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(220, 53, 69, 0.4);
+}
+
+.sync-actions {
+    margin-top: 20px;
+    text-align: center;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+}

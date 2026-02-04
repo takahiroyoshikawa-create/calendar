@@ -1,8 +1,8 @@
-// 子供の設定
+// 子供の設定（名前を変更）
 const kidsConfig = {
-    kid1: { name: '太郎', color: '#FF6B6B' },
-    kid2: { name: '花子', color: '#4ECDC4' },
-    kid3: { name: '次郎', color: '#95E1D3' }
+    kid1: { name: '尚貴', color: '#FF6B6B' },
+    kid2: { name: '豪貴', color: '#4ECDC4' },
+    kid3: { name: '光貴', color: '#95E1D3' }
 };
 
 // グローバル変数
@@ -13,9 +13,14 @@ let currentEvent = null;
 // ローカルストレージのキー
 const STORAGE_KEY = 'kidsCalendarEvents';
 const ICAL_URLS_KEY = 'kidsCalendarIcalUrls';
+const DATA_VERSION_KEY = 'kidsCalendarDataVersion';
+const CURRENT_DATA_VERSION = '2.0'; // データバージョン
 
-// 初期化（修正版）
+// 初期化
 document.addEventListener('DOMContentLoaded', function() {
+    // データのクリーンアップとマイグレーション
+    migrateData();
+    
     // 認証チェックは auth.js で行われるため、ここでは条件付きで初期化
     if (isSessionValid()) {
         initCalendar();
@@ -23,6 +28,51 @@ document.addEventListener('DOMContentLoaded', function() {
     initEventListeners();
     loadIcalUrls();
 });
+
+// データのマイグレーション
+function migrateData() {
+    const currentVersion = localStorage.getItem(DATA_VERSION_KEY);
+    
+    if (currentVersion !== CURRENT_DATA_VERSION) {
+        console.log('データをマイグレーション中...');
+        
+        // 古いイベントデータを取得
+        const events = loadEvents();
+        
+        if (events && events.length > 0) {
+            // タイトルから名前を削除
+            const migratedEvents = events.map(event => {
+                // タイトルから「太郎:」「花子:」「次郎:」などを削除
+                let newTitle = event.title;
+                
+                // 古い名前パターンを削除
+                const oldNames = ['太郎', '花子', '次郎', '尚貴', '豪貴', '光貴'];
+                oldNames.forEach(name => {
+                    const pattern = new RegExp(`^${name}:\\s*`, 'g');
+                    newTitle = newTitle.replace(pattern, '');
+                });
+                
+                // originalTitleも更新
+                if (event.extendedProps && event.extendedProps.originalTitle) {
+                    event.extendedProps.originalTitle = newTitle;
+                }
+                
+                return {
+                    ...event,
+                    title: newTitle
+                };
+            });
+            
+            // マイグレーション済みデータを保存
+            saveEvents(migratedEvents);
+            console.log(`${migratedEvents.length}件のイベントをマイグレーションしました`);
+        }
+        
+        // バージョンを更新
+        localStorage.setItem(DATA_VERSION_KEY, CURRENT_DATA_VERSION);
+        console.log('マイグレーション完了');
+    }
+}
 
 // カレンダー初期化
 function initCalendar() {
@@ -76,6 +126,12 @@ function initEventListeners() {
         document.getElementById('syncPanel').classList.toggle('hidden');
     });
 
+    // データクリア機能（新規追加）
+    const clearDataBtn = document.getElementById('clearDataBtn');
+    if (clearDataBtn) {
+        clearDataBtn.addEventListener('click', clearAllData);
+    }
+
     // モーダルクローズ
     document.querySelector('.close').addEventListener('click', closeModal);
     
@@ -92,6 +148,32 @@ function initEventListeners() {
 
     // 削除ボタン
     document.getElementById('deleteEventBtn').addEventListener('click', deleteEvent);
+}
+
+// 全データをクリア（新規追加）
+function clearAllData() {
+    if (confirm('⚠️ 警告：全てのデータ（予定、URL設定）を削除します。\nこの操作は取り消せません。本当に削除しますか？')) {
+        if (confirm('本当によろしいですか？削除されたデータは復元できません。')) {
+            localStorage.removeItem(STORAGE_KEY);
+            localStorage.removeItem(ICAL_URLS_KEY);
+            localStorage.removeItem(DATA_VERSION_KEY);
+            
+            // カレンダーをリフレッシュ
+            if (calendar) {
+                calendar.removeAllEvents();
+            }
+            
+            // URL入力欄をリセット
+            ['kid1', 'kid2', 'kid3'].forEach(kidId => {
+                const container = document.getElementById(`${kidId}-urls`);
+                container.innerHTML = '';
+                addUrlInput(kidId);
+            });
+            
+            alert('全てのデータを削除しました。');
+            location.reload();
+        }
+    }
 }
 
 // イベント読み込み
@@ -132,7 +214,14 @@ function openModal(event = null) {
         // 編集モード
         document.getElementById('modalTitle').textContent = '予定を編集';
         document.getElementById('eventKid').value = event.extendedProps.kid;
-        document.getElementById('eventTitle').value = event.title;
+        
+        // タイトルから名前を除去して表示
+        let displayTitle = event.title;
+        const kidName = kidsConfig[event.extendedProps.kid].name;
+        const pattern = new RegExp(`^${kidName}:\\s*`, 'g');
+        displayTitle = displayTitle.replace(pattern, '');
+        
+        document.getElementById('eventTitle').value = displayTitle;
         document.getElementById('eventStart').value = formatDateTimeLocal(event.start);
         document.getElementById('eventEnd').value = formatDateTimeLocal(event.end || event.start);
         document.getElementById('eventDescription').value = event.extendedProps.description || '';
@@ -152,19 +241,19 @@ function closeModal() {
     currentEvent = null;
 }
 
-// フォーム送信処理
+// フォーム送信処理（名前を含めない）
 function handleFormSubmit(e) {
     e.preventDefault();
     
     const kid = document.getElementById('eventKid').value;
-    const title = document.getElementById('eventTitle').value;
+    const title = document.getElementById('eventTitle').value; // 名前を付けない
     const start = document.getElementById('eventStart').value;
     const end = document.getElementById('eventEnd').value;
     const description = document.getElementById('eventDescription').value;
     
     const eventData = {
         id: currentEvent ? currentEvent.id : Date.now().toString(),
-        title: `${kidsConfig[kid].name}: ${title}`,
+        title: title, // 名前なしでそのまま保存
         start: start,
         end: end,
         backgroundColor: kidsConfig[kid].color,
@@ -278,10 +367,22 @@ function formatDateTimeLocal(date) {
 // iCal URL保存
 function saveIcalUrls() {
     const urls = {
-        kid1: document.getElementById('icalUrl1').value,
-        kid2: document.getElementById('icalUrl2').value,
-        kid3: document.getElementById('icalUrl3').value
+        kid1: [],
+        kid2: [],
+        kid3: []
     };
+    
+    // 各子供のURL入力欄から値を取得
+    ['kid1', 'kid2', 'kid3'].forEach(kidId => {
+        const inputs = document.querySelectorAll(`#${kidId}-urls .ical-url-input`);
+        inputs.forEach(input => {
+            const url = input.value.trim();
+            if (url) {
+                urls[kidId].push(url);
+            }
+        });
+    });
+    
     localStorage.setItem(ICAL_URLS_KEY, JSON.stringify(urls));
 }
 
@@ -290,8 +391,70 @@ function loadIcalUrls() {
     const stored = localStorage.getItem(ICAL_URLS_KEY);
     if (stored) {
         const urls = JSON.parse(stored);
-        document.getElementById('icalUrl1').value = urls.kid1 || '';
-        document.getElementById('icalUrl2').value = urls.kid2 || '';
-        document.getElementById('icalUrl3').value = urls.kid3 || '';
+        
+        // 各子供のURLを復元
+        ['kid1', 'kid2', 'kid3'].forEach(kidId => {
+            const urlList = urls[kidId] || [];
+            const container = document.getElementById(`${kidId}-urls`);
+            
+            // 既存の入力欄をクリア
+            container.innerHTML = '';
+            
+            // URLがない場合は1つだけ入力欄を表示
+            if (urlList.length === 0) {
+                addUrlInput(kidId);
+            } else {
+                // 保存されたURLを復元
+                urlList.forEach((url, index) => {
+                    addUrlInput(kidId, url, index);
+                });
+            }
+        });
     }
+}
+
+// URL入力欄を追加
+function addUrlInput(kidId, url = '', index = null) {
+    const container = document.getElementById(`${kidId}-urls`);
+    const currentInputs = container.querySelectorAll('.sync-input-group');
+    const newIndex = index !== null ? index : currentInputs.length;
+    
+    const inputGroup = document.createElement('div');
+    inputGroup.className = 'sync-input-group';
+    inputGroup.innerHTML = `
+        <input type="text" class="ical-url-input" data-kid="${kidId}" data-index="${newIndex}" 
+               placeholder="webcal://... または https://..." value="${url}">
+        <button onclick="syncSingleUrl('${kidId}', ${newIndex})">同期</button>
+        <button class="btn-remove" onclick="removeUrl('${kidId}', ${newIndex})">✕</button>
+    `;
+    
+    container.appendChild(inputGroup);
+}
+
+// URL入力欄を削除
+function removeUrl(kidId, index) {
+    const container = document.getElementById(`${kidId}-urls`);
+    const inputGroups = container.querySelectorAll('.sync-input-group');
+    
+    // 最後の1つは削除しない
+    if (inputGroups.length <= 1) {
+        alert('最低1つのURL入力欄は必要です。');
+        return;
+    }
+    
+    inputGroups[index].remove();
+    
+    // インデックスを振り直し
+    const remainingGroups = container.querySelectorAll('.sync-input-group');
+    remainingGroups.forEach((group, newIndex) => {
+        const input = group.querySelector('.ical-url-input');
+        const syncBtn = group.querySelector('button:not(.btn-remove)');
+        const removeBtn = group.querySelector('.btn-remove');
+        
+        input.dataset.index = newIndex;
+        syncBtn.setAttribute('onclick', `syncSingleUrl('${kidId}', ${newIndex})`);
+        removeBtn.setAttribute('onclick', `removeUrl('${kidId}', ${newIndex})`);
+    });
+    
+    saveIcalUrls();
 }

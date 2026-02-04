@@ -9,17 +9,6 @@
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css' rel='stylesheet' />
 </head>
 <body>
-    <!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>子供の予定管理カレンダー</title>
-    <link rel="stylesheet" href="style.css">
-    <!-- FullCalendar CSS -->
-    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css' rel='stylesheet' />
-</head>
-<body>
     <!-- ログイン画面 -->
     <div id="loginScreen" class="login-screen">
         <div class="login-container">
@@ -76,16 +65,22 @@
         <header>
             <div class="header-content">
                 <h1>📅 子供の予定管理</h1>
-                <button id="logoutBtn" class="btn-logout">ログアウト</button>
+                <div class="header-actions">
+                    <div class="auto-sync-status">
+                        <span id="autoSyncIndicator" class="sync-indicator">🔄 自動同期: <span id="syncStatus">オフ</span></span>
+                        <span id="lastSyncTime" class="last-sync-time"></span>
+                    </div>
+                    <button id="logoutBtn" class="btn-logout">ログアウト</button>
+                </div>
             </div>
         </header>
 
         <!-- 子供選択タブ -->
         <div class="kids-tabs">
             <button class="kid-tab active" data-kid="all">全員</button>
-            <button class="kid-tab" data-kid="kid1" style="border-left: 4px solid #FF6B6B;">太郎</button>
-            <button class="kid-tab" data-kid="kid2" style="border-left: 4px solid #4ECDC4;">花子</button>
-            <button class="kid-tab" data-kid="kid3" style="border-left: 4px solid #95E1D3;">次郎</button>
+            <button class="kid-tab" data-kid="kid1" style="border-left: 4px solid #FF6B6B;">尚貴</button>
+            <button class="kid-tab" data-kid="kid2" style="border-left: 4px solid #4ECDC4;">豪貴</button>
+            <button class="kid-tab" data-kid="kid3" style="border-left: 4px solid #95E1D3;">光貴</button>
         </div>
 
         <!-- iCal同期設定 -->
@@ -93,22 +88,108 @@
             <button id="toggleSync" class="btn-secondary">🔄 iCal同期設定</button>
             <div id="syncPanel" class="sync-panel hidden">
                 <h3>iCalendar URL設定</h3>
-                <div class="sync-input-group">
-                    <label>太郎のカレンダーURL:</label>
-                    <input type="url" id="icalUrl1" placeholder="https://calendar.google.com/...">
-                    <button onclick="syncCalendar('kid1')">同期</button>
+                <p class="sync-info">📌 対応形式: webcal://, webcals://, http://, https://</p>
+                
+                <!-- 自動同期設定 -->
+                <div class="auto-sync-settings">
+                    <h4>⚙️ 自動同期設定</h4>
+                    <div class="auto-sync-controls">
+                        <label class="switch">
+                            <input type="checkbox" id="autoSyncToggle">
+                            <span class="slider"></span>
+                        </label>
+                        <label for="autoSyncToggle">自動同期を有効にする</label>
+                    </div>
+                    <div class="sync-interval-group">
+                        <label for="syncInterval">同期間隔:</label>
+                        <select id="syncInterval">
+                            <option value="15">15分</option>
+                            <option value="30">30分</option>
+                            <option value="60" selected>1時間</option>
+                            <option value="120">2時間</option>
+                            <option value="360">6時間</option>
+                        </select>
+                    </div>
                 </div>
-                <div class="sync-input-group">
-                    <label>花子のカレンダーURL:</label>
-                    <input type="url" id="icalUrl2" placeholder="https://calendar.google.com/...">
-                    <button onclick="syncCalendar('kid2')">同期</button>
+
+                <!-- 尚貴のカレンダー -->
+                <div class="kid-calendar-section">
+                    <h4>👦 尚貴のカレンダー</h4>
+                    <div id="kid1-urls" class="url-list">
+                        <div class="sync-input-group">
+                            <input type="text" class="ical-url-input" data-kid="kid1" data-index="0" placeholder="webcal://... または https://...">
+                            <button onclick="syncSingleUrl('kid1', 0)">同期</button>
+                            <button class="btn-remove" onclick="removeUrl('kid1', 0)">✕</button>
+                        </div>
+                    </div>
+                    <button class="btn-add-url" onclick="addUrlInput('kid1')">➕ URLを追加</button>
                 </div>
-                <div class="sync-input-group">
-                    <label>次郎のカレンダーURL:</label>
-                    <input type="url" id="icalUrl3" placeholder="https://calendar.google.com/...">
-                    <button onclick="syncCalendar('kid3')">同期</button>
+
+                <!-- 豪貴のカレンダー -->
+                <div class="kid-calendar-section">
+                    <h4>👦 豪貴のカレンダー</h4>
+                    <div id="kid2-urls" class="url-list">
+                        <div class="sync-input-group">
+                            <input type="text" class="ical-url-input" data-kid="kid2" data-index="0" placeholder="webcal://... または https://...">
+                            <button onclick="syncSingleUrl('kid2', 0)">同期</button>
+                            <button class="btn-remove" onclick="removeUrl('kid2', 0)">✕</button>
+                        </div>
+                    </div>
+                    <button class="btn-add-url" onclick="addUrlInput('kid2')">➕ URLを追加</button>
                 </div>
-                <p class="sync-note">※ Google カレンダーの場合：設定 → カレンダーの統合 → 「iCal形式の非公開URL」をコピー</p>
+
+                <!-- 光貴のカレンダー -->
+                <div class="kid-calendar-section">
+                    <h4>👦 光貴のカレンダー</h4>
+                    <div id="kid3-urls" class="url-list">
+                        <div class="sync-input-group">
+                            <input type="text" class="ical-url-input" data-kid="kid3" data-index="0" placeholder="webcal://... または https://...">
+                            <button onclick="syncSingleUrl('kid3', 0)">同期</button>
+                            <button class="btn-remove" onclick="removeUrl('kid3', 0)">✕</button>
+                        </div>
+                    </div>
+                    <button class="btn-add-url" onclick="addUrlInput('kid3')">➕ URLを追加</button>
+                </div>
+                
+                <div class="sync-actions">
+                    <button onclick="syncAllCalendars()" class="btn-sync-all">🔄 全て同期</button>
+                </div>
+                
+                <div class="sync-actions">
+                    <button onclick="syncAllCalendars()" class="btn-sync-all">🔄 全て同期</button>
+                    <button id="clearDataBtn" class="btn-danger-outline">🗑️ 全データ削除</button>
+                </div>
+                
+                <div class="sync-help">
+                    <h4>📖 URL取得方法</h4>
+                    <details>
+                        <summary>Googleカレンダー</summary>
+                        <ol>
+                            <li>カレンダー設定を開く</li>
+                            <li>対象カレンダーの「設定と共有」</li>
+                            <li>「カレンダーの統合」セクション</li>
+                            <li>「iCal形式の非公開URL」をコピー</li>
+                            <li>webcal:// で始まる場合もそのまま貼り付けOK</li>
+                        </ol>
+                    </details>
+                    <details>
+                        <summary>Outlookカレンダー</summary>
+                        <ol>
+                            <li>カレンダーを開く</li>
+                            <li>「共有」→「ICS形式で公開」</li>
+                            <li>URLをコピー（webcal形式で提供されます）</li>
+                        </ol>
+                    </details>
+                    <details>
+                        <summary>iCloudカレンダー</summary>
+                        <ol>
+                            <li>iCloud.comでカレンダーを開く</li>
+                            <li>カレンダー名の横の共有アイコンをクリック</li>
+                            <li>「公開カレンダー」をオン</li>
+                            <li>URLをコピー（webcal形式）</li>
+                        </ol>
+                    </details>
+                </div>
             </div>
         </div>
 
@@ -129,9 +210,9 @@
                     <div class="form-group">
                         <label>子供:</label>
                         <select id="eventKid" required>
-                            <option value="kid1">太郎</option>
-                            <option value="kid2">花子</option>
-                            <option value="kid3">次郎</option>
+                            <option value="kid1">尚貴</option>
+                            <option value="kid2">豪貴</option>
+                            <option value="kid3">光貴</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -167,99 +248,6 @@
     <!-- CryptoJS for password hashing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <script src="auth.js"></script>
-    <script src="ical-sync.js"></script>
-    <script src="app.js"></script>
-</body>
-</html>
-    <div class="container">
-        <header>
-            <h1>📅 子供の予定管理</h1>
-        </header>
-
-        <!-- 子供選択タブ -->
-        <div class="kids-tabs">
-            <button class="kid-tab active" data-kid="all">全員</button>
-            <button class="kid-tab" data-kid="kid1" style="border-left: 4px solid #FF6B6B;">太郎</button>
-            <button class="kid-tab" data-kid="kid2" style="border-left: 4px solid #4ECDC4;">花子</button>
-            <button class="kid-tab" data-kid="kid3" style="border-left: 4px solid #95E1D3;">次郎</button>
-        </div>
-
-        <!-- iCal同期設定 -->
-        <div class="sync-section">
-            <button id="toggleSync" class="btn-secondary">🔄 iCal同期設定</button>
-            <div id="syncPanel" class="sync-panel hidden">
-                <h3>iCalendar URL設定</h3>
-                <div class="sync-input-group">
-                    <label>太郎のカレンダーURL:</label>
-                    <input type="url" id="icalUrl1" placeholder="https://calendar.google.com/...">
-                    <button onclick="syncCalendar('kid1')">同期</button>
-                </div>
-                <div class="sync-input-group">
-                    <label>花子のカレンダーURL:</label>
-                    <input type="url" id="icalUrl2" placeholder="https://calendar.google.com/...">
-                    <button onclick="syncCalendar('kid2')">同期</button>
-                </div>
-                <div class="sync-input-group">
-                    <label>次郎のカレンダーURL:</label>
-                    <input type="url" id="icalUrl3" placeholder="https://calendar.google.com/...">
-                    <button onclick="syncCalendar('kid3')">同期</button>
-                </div>
-                <p class="sync-note">※ Google カレンダーの場合：設定 → カレンダーの統合 → 「iCal形式の非公開URL」をコピー</p>
-            </div>
-        </div>
-
-        <!-- 予定追加ボタン -->
-        <div class="action-buttons">
-            <button id="addEventBtn" class="btn-primary">➕ 予定を追加</button>
-        </div>
-
-        <!-- カレンダー -->
-        <div id="calendar"></div>
-
-        <!-- 予定追加/編集モーダル -->
-        <div id="eventModal" class="modal hidden">
-            <div class="modal-content">
-                <span class="close">&times;</span>
-                <h2 id="modalTitle">予定を追加</h2>
-                <form id="eventForm">
-                    <div class="form-group">
-                        <label>子供:</label>
-                        <select id="eventKid" required>
-                            <option value="kid1">太郎</option>
-                            <option value="kid2">花子</option>
-                            <option value="kid3">次郎</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>タイトル:</label>
-                        <input type="text" id="eventTitle" required placeholder="例: ピアノ教室">
-                    </div>
-                    <div class="form-group">
-                        <label>開始日時:</label>
-                        <input type="datetime-local" id="eventStart" required>
-                    </div>
-                    <div class="form-group">
-                        <label>終了日時:</label>
-                        <input type="datetime-local" id="eventEnd" required>
-                    </div>
-                    <div class="form-group">
-                        <label>メモ:</label>
-                        <textarea id="eventDescription" rows="3" placeholder="持ち物、場所など"></textarea>
-                    </div>
-                    <div class="form-actions">
-                        <button type="submit" class="btn-primary">保存</button>
-                        <button type="button" id="deleteEventBtn" class="btn-danger hidden">削除</button>
-                        <button type="button" class="btn-secondary" onclick="closeModal()">キャンセル</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- FullCalendar JS -->
-    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
-    <!-- iCal.js for parsing iCal files -->
-    <script src='https://cdn.jsdelivr.net/npm/ical.js@1.5.0/build/ical.min.js'></script>
     <script src="ical-sync.js"></script>
     <script src="app.js"></script>
 </body>
