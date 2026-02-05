@@ -330,7 +330,9 @@ function parseAndAddEvents(icalData, kidId, urlIndex) {
                         kidId,
                         nextDate,
                         endDate,
-                        `ical-${kidId}-${urlIndex}-${event.uid}-${instanceCount}`,
+                        urlIndex === 9999 
+                            ? generateFileImportEventId(kidId, event.uid, instanceCount)
+                            : `ical-${kidId}-${urlIndex}-${event.uid}-${instanceCount}`,
                         urlIndex
                     );
                     
@@ -345,7 +347,9 @@ function parseAndAddEvents(icalData, kidId, urlIndex) {
                     kidId,
                     event.startDate.toJSDate(),
                     event.endDate.toJSDate(),
-                    `ical-${kidId}-${urlIndex}-${event.uid}`,
+                    urlIndex === 9999 
+                        ? generateFileImportEventId(kidId, event.uid)
+                        : `ical-${kidId}-${urlIndex}-${event.uid}`,
                     urlIndex
                 );
                 
@@ -374,13 +378,9 @@ function parseAndAddEvents(icalData, kidId, urlIndex) {
 
 // イベントデータ作成ヘルパー関数
 function createEventData(event, kidId, startDate, endDate, eventId, urlIndex) {
-    // タイトルを取得
     let displayTitle = event.summary || '(タイトルなし)';
-    
-    // 場所情報を取得
     const location = event.location || '';
     
-    // 場所がある場合はタイトルに追加
     if (location) {
         displayTitle = `${displayTitle} 📍${location}`;
     }
@@ -408,4 +408,70 @@ function createEventData(event, kidId, startDate, endDate, eventId, urlIndex) {
             urlIndex: urlIndex
         }
     };
+}
+
+// .icsファイルのインポート処理
+function handleIcsFileImport(event) {
+    const file = event.target.files[0];
+    
+    if (!file) {
+        return;
+    }
+    
+    const fileNameDisplay = document.getElementById('fileNameDisplay');
+    fileNameDisplay.textContent = file.name;
+    
+    if (file.size > 10 * 1024 * 1024) {
+        alert('ファイルサイズが大きすぎます。10MB以下のファイルを選択してください。');
+        event.target.value = '';
+        fileNameDisplay.textContent = '';
+        return;
+    }
+    
+    if (!file.name.toLowerCase().endsWith('.ics')) {
+        alert('.icsファイルを選択してください。');
+        event.target.value = '';
+        fileNameDisplay.textContent = '';
+        return;
+    }
+    
+    const kidId = document.getElementById('importKidSelect').value;
+    const reader = new FileReader();
+    
+    reader.onload = function(e) {
+        try {
+            const icalData = e.target.result;
+            const urlIndex = 9999;
+            
+            parseAndAddEvents(icalData, kidId, urlIndex);
+            
+            alert(`${kidsConfig[kidId].name}のカレンダーに${file.name}をインポートしました！`);
+            
+            event.target.value = '';
+            fileNameDisplay.textContent = '';
+            
+            localStorage.setItem(LAST_SYNC_TIME_KEY, Date.now().toString());
+            updateLastSyncTime();
+            
+        } catch (error) {
+            console.error('ファイルインポートエラー:', error);
+            alert('ファイルの読み込みに失敗しました。正しい.icsファイルか確認してください。');
+            event.target.value = '';
+            fileNameDisplay.textContent = '';
+        }
+    };
+    
+    reader.onerror = function() {
+        alert('ファイルの読み込みに失敗しました。');
+        event.target.value = '';
+        fileNameDisplay.textContent = '';
+    };
+    
+    reader.readAsText(file);
+}
+
+// ファイルインポート用のイベントID生成
+function generateFileImportEventId(kidId, icalUid, instanceIndex = 0) {
+    const timestamp = Date.now();
+    return `file-import-${kidId}-${timestamp}-${icalUid}-${instanceIndex}`;
 }

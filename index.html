@@ -112,6 +112,27 @@
                     </div>
                 </div>
 
+                <!-- ファイルインポート機能 -->
+                <div class="file-import-section">
+                    <h4>📁 .icsファイルをインポート</h4>
+                    <p style="font-size: 13px; color: #856404; margin-bottom: 10px;">
+                        ローカルの.icsファイルをアップロードして予定を追加できます
+                    </p>
+                    <div class="file-import-group">
+                        <label for="importKidSelect">担当:</label>
+                        <select id="importKidSelect">
+                            <option value="kid1">尚貴</option>
+                            <option value="kid2">豪貴</option>
+                            <option value="kid3">光貴</option>
+                        </select>
+                        <div class="file-input-wrapper">
+                            <input type="file" id="icsFileInput" accept=".ics" onchange="handleIcsFileImport(event)">
+                            <label for="icsFileInput" class="file-input-label">📂 ファイルを選択</label>
+                        </div>
+                        <span id="fileNameDisplay" class="file-name-display"></span>
+                    </div>
+                </div>
+
                 <!-- 尚貴のカレンダー -->
                 <div class="kid-calendar-section">
                     <h4>👦 尚貴のカレンダー</h4>

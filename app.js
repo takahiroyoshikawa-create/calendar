@@ -76,12 +76,14 @@ function migrateData() {
     }
 }
 
+
 // カレンダー初期化
 function initCalendar() {
     const calendarEl = document.getElementById('calendar');
     
     calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
+        firstDay: 1, // 月曜始まり（0=日曜, 1=月曜）
         headerToolbar: {
             left: 'prev,next today',
             center: 'title',
@@ -104,9 +106,7 @@ function initCalendar() {
     });
     
     calendar.render();
-}
-
-// イベントリスナー設定
+}// イベントリスナー設定
 function initEventListeners() {
     // 子供タブ
     document.querySelectorAll('.kid-tab').forEach(tab => {
