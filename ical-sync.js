@@ -1,4 +1,4 @@
-// iCalカレンダー同期機能（複数URL対応 + 自動同期）
+// iCalカレンダー同期機能
 
 // 自動同期タイマー
 let autoSyncTimer = null;
@@ -8,7 +8,7 @@ const LAST_SYNC_TIME_KEY = 'lastSyncTime';
 
 // 自動同期の初期化
 document.addEventListener('DOMContentLoaded', function() {
-    if (isSessionValid()) {
+    if (typeof isSessionValid !== 'undefined' && isSessionValid()) {
         initAutoSync();
     }
 });
@@ -18,14 +18,12 @@ function initAutoSync() {
     const autoSyncToggle = document.getElementById('autoSyncToggle');
     const syncIntervalSelect = document.getElementById('syncInterval');
     
-    // 保存された設定を読み込み
     const isEnabled = localStorage.getItem(AUTO_SYNC_ENABLED_KEY) === 'true';
     const interval = localStorage.getItem(AUTO_SYNC_INTERVAL_KEY) || '60';
     
     autoSyncToggle.checked = isEnabled;
     syncIntervalSelect.value = interval;
     
-    // 自動同期トグルのイベントリスナー
     autoSyncToggle.addEventListener('change', function() {
         const enabled = this.checked;
         localStorage.setItem(AUTO_SYNC_ENABLED_KEY, enabled);
@@ -39,7 +37,6 @@ function initAutoSync() {
         updateSyncStatus();
     });
     
-    // 同期間隔変更のイベントリスナー
     syncIntervalSelect.addEventListener('change', function() {
         localStorage.setItem(AUTO_SYNC_INTERVAL_KEY, this.value);
         
@@ -49,12 +46,10 @@ function initAutoSync() {
         }
     });
     
-    // 自動同期を開始（有効な場合）
     if (isEnabled) {
         startAutoSync();
     }
     
-    // 最終同期時刻を表示
     updateLastSyncTime();
     updateSyncStatus();
 }
@@ -62,17 +57,15 @@ function initAutoSync() {
 // 自動同期を開始
 function startAutoSync() {
     const interval = parseInt(localStorage.getItem(AUTO_SYNC_INTERVAL_KEY) || '60');
-    const intervalMs = interval * 60 * 1000; // 分をミリ秒に変換
+    const intervalMs = interval * 60 * 1000;
     
-    // 既存のタイマーをクリア
     if (autoSyncTimer) {
         clearInterval(autoSyncTimer);
     }
     
-    // 新しいタイマーを設定
     autoSyncTimer = setInterval(() => {
         console.log('自動同期を実行中...');
-        syncAllCalendars(true); // true = サイレントモード
+        syncAllCalendars(true);
     }, intervalMs);
     
     console.log(`自動同期を開始しました（${interval}分間隔）`);
@@ -144,13 +137,11 @@ async function syncSingleUrl(kidId, index) {
         return;
     }
     
-    // webcal:// を https:// に変換
     url = convertWebcalToHttp(url);
     
     try {
         showSyncProgress(kidId, index, 'カレンダーを同期中...');
         
-        // CORS問題を回避するためのプロキシサービスを使用
         const proxyUrl = 'https://api.allorigins.win/raw?url=';
         const response = await fetch(proxyUrl + encodeURIComponent(url));
         
@@ -159,12 +150,13 @@ async function syncSingleUrl(kidId, index) {
         }
         
         const icalData = await response.text();
+        console.log('iCalデータを取得しました:', icalData.substring(0, 200));
+        
         parseAndAddEvents(icalData, kidId, index);
         saveIcalUrls();
         
         hideSyncProgress(kidId, index);
         
-        // 最終同期時刻を更新
         localStorage.setItem(LAST_SYNC_TIME_KEY, Date.now().toString());
         updateLastSyncTime();
         
@@ -173,7 +165,6 @@ async function syncSingleUrl(kidId, index) {
         console.error('同期エラー:', error);
         hideSyncProgress(kidId, index);
         
-        // エラーメッセージを詳細に
         let errorMessage = '同期に失敗しました。\n\n';
         
         if (url.includes('webcal://')) {
@@ -200,7 +191,6 @@ async function syncAllCalendars(silent = false) {
         kid3: []
     };
     
-    // 各子供のURLを収集
     ['kid1', 'kid2', 'kid3'].forEach(kidId => {
         const inputs = document.querySelectorAll(`#${kidId}-urls .ical-url-input`);
         inputs.forEach(input => {
@@ -214,7 +204,6 @@ async function syncAllCalendars(silent = false) {
     let syncCount = 0;
     let errorCount = 0;
     
-    // 各URLを同期
     for (const [kidId, urlList] of Object.entries(urls)) {
         for (let i = 0; i < urlList.length; i++) {
             const url = urlList[i];
@@ -241,7 +230,6 @@ async function syncAllCalendars(silent = false) {
     
     saveIcalUrls();
     
-    // 最終同期時刻を更新
     localStorage.setItem(LAST_SYNC_TIME_KEY, Date.now().toString());
     updateLastSyncTime();
     
@@ -269,6 +257,8 @@ function convertWebcalToHttp(url) {
 // 同期進捗表示
 function showSyncProgress(kidId, index, message) {
     const input = document.querySelector(`#${kidId}-urls .ical-url-input[data-index="${index}"]`);
+    if (!input) return;
+    
     const syncButton = input.nextElementSibling;
     
     syncButton.disabled = true;
@@ -279,6 +269,8 @@ function showSyncProgress(kidId, index, message) {
 // 同期進捗非表示
 function hideSyncProgress(kidId, index) {
     const input = document.querySelector(`#${kidId}-urls .ical-url-input[data-index="${index}"]`);
+    if (!input) return;
+    
     const syncButton = input.nextElementSibling;
     
     syncButton.disabled = false;
@@ -292,9 +284,11 @@ function parseAndAddEvents(icalData, kidId, urlIndex) {
         const comp = new ICAL.Component(jcalData);
         const vevents = comp.getAllSubcomponents('vevent');
         
+        console.log(`${vevents.length}件のイベントを検出しました`);
+        
         const events = loadEvents();
         
-        // 既存のiCalイベントを削除（同じkidと同じurlIndexのもの）
+        // 既存のiCalイベントを削除
         const filteredEvents = events.filter(e => 
             !(e.extendedProps.fromIcal && 
               e.extendedProps.kid === kidId && 
@@ -303,9 +297,14 @@ function parseAndAddEvents(icalData, kidId, urlIndex) {
         
         let addedCount = 0;
         
-        // 新しいイベントを追加
-        vevents.forEach(vevent => {
+        vevents.forEach((vevent, eventIndex) => {
             const event = new ICAL.Event(vevent);
+            
+            console.log(`イベント ${eventIndex + 1}:`, {
+                summary: event.summary,
+                location: event.location,
+                description: event.description
+            });
             
             // 繰り返しイベントの処理
             if (event.isRecurring()) {
@@ -356,9 +355,14 @@ function parseAndAddEvents(icalData, kidId, urlIndex) {
         });
         
         saveEvents(filteredEvents);
-        calendar.removeAllEvents();
-        calendar.addEventSource(filteredEvents);
-        filterEvents();
+        
+        if (typeof calendar !== 'undefined' && calendar) {
+            calendar.removeAllEvents();
+            calendar.addEventSource(filteredEvents);
+            if (typeof filterEvents === 'function') {
+                filterEvents();
+            }
+        }
         
         console.log(`${kidId} URL${urlIndex}: ${addedCount}件のイベントを追加しました`);
         
@@ -368,11 +372,28 @@ function parseAndAddEvents(icalData, kidId, urlIndex) {
     }
 }
 
-// イベントデータ作成ヘルパー関数（名前を含めない）
+// イベントデータ作成ヘルパー関数
 function createEventData(event, kidId, startDate, endDate, eventId, urlIndex) {
+    // タイトルを取得
+    let displayTitle = event.summary || '(タイトルなし)';
+    
+    // 場所情報を取得
+    const location = event.location || '';
+    
+    // 場所がある場合はタイトルに追加
+    if (location) {
+        displayTitle = `${displayTitle} 📍${location}`;
+    }
+    
+    console.log('イベント作成:', {
+        title: displayTitle,
+        location: location,
+        originalTitle: event.summary
+    });
+    
     return {
         id: eventId,
-        title: event.summary, // 名前を付けない
+        title: displayTitle,
         start: startDate.toISOString(),
         end: endDate.toISOString(),
         backgroundColor: kidsConfig[kidId].color,
@@ -380,8 +401,8 @@ function createEventData(event, kidId, startDate, endDate, eventId, urlIndex) {
         extendedProps: {
             kid: kidId,
             description: event.description || '',
-            location: event.location || '',
-            originalTitle: event.summary,
+            location: location,
+            originalTitle: event.summary || '(タイトルなし)',
             fromIcal: true,
             icalUid: event.uid,
             urlIndex: urlIndex

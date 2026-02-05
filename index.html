@@ -153,10 +153,6 @@
                 
                 <div class="sync-actions">
                     <button onclick="syncAllCalendars()" class="btn-sync-all">🔄 全て同期</button>
-                </div>
-                
-                <div class="sync-actions">
-                    <button onclick="syncAllCalendars()" class="btn-sync-all">🔄 全て同期</button>
                     <button id="clearDataBtn" class="btn-danger-outline">🗑️ 全データ削除</button>
                 </div>
                 
@@ -220,6 +216,10 @@
                         <input type="text" id="eventTitle" required placeholder="例: ピアノ教室">
                     </div>
                     <div class="form-group">
+                        <label>場所:</label>
+                        <input type="text" id="eventLocation" placeholder="例: ○○音楽教室">
+                    </div>
+                    <div class="form-group">
                         <label>開始日時:</label>
                         <input type="datetime-local" id="eventStart" required>
                     </div>
@@ -237,6 +237,51 @@
                         <button type="button" class="btn-secondary" onclick="closeModal()">キャンセル</button>
                     </div>
                 </form>
+            </div>
+        </div>
+
+        <!-- イベント詳細モーダル（iCal同期イベント用） -->
+        <div id="eventDetailsModal" class="modal hidden">
+            <div class="modal-content">
+                <span class="close" onclick="closeEventDetailsModal()">&times;</span>
+                <h2>📅 予定の詳細</h2>
+                <div class="event-details">
+                    <div class="detail-row">
+                        <div class="detail-label">📝 タイトル:</div>
+                        <div class="detail-value" id="detailTitle"></div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">👦 担当:</div>
+                        <div class="detail-value" id="detailKid"></div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">🕐 開始:</div>
+                        <div class="detail-value" id="detailStart"></div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">🕐 終了:</div>
+                        <div class="detail-value" id="detailEnd"></div>
+                    </div>
+                    <div class="detail-row" id="detailLocationRow" style="display: none;">
+                        <div class="detail-label">📍 場所:</div>
+                        <div class="detail-value">
+                            <span id="detailLocation"></span>
+                            <a id="detailMapsLink" href="#" target="_blank" class="maps-link">
+                                🗺️ 地図で開く
+                            </a>
+                        </div>
+                    </div>
+                    <div class="detail-row" id="detailDescriptionRow" style="display: none;">
+                        <div class="detail-label">📄 説明:</div>
+                        <div class="detail-value" id="detailDescription"></div>
+                    </div>
+                    <div class="detail-note">
+                        <small>※ iCalから同期されたイベントは編集できません</small>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="closeEventDetailsModal()">閉じる</button>
+                </div>
             </div>
         </div>
     </div>

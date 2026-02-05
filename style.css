@@ -764,3 +764,88 @@ input:checked + .slider:before {
     justify-content: center;
     flex-wrap: wrap;
 }
+
+/* イベント詳細モーダル */
+.event-details {
+    margin: 20px 0;
+}
+
+.detail-row {
+    display: flex;
+    margin-bottom: 15px;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 5px;
+    align-items: flex-start;
+}
+
+.detail-label {
+    font-weight: 600;
+    color: #555;
+    min-width: 100px;
+    flex-shrink: 0;
+}
+
+.detail-value {
+    flex: 1;
+    color: #333;
+    word-wrap: break-word;
+}
+
+.detail-value a {
+    display: inline-block;
+    margin-left: 10px;
+}
+
+.maps-link {
+    color: #4285f4;
+    text-decoration: none;
+    font-size: 14px;
+    padding: 4px 8px;
+    background: #e8f0fe;
+    border-radius: 4px;
+    transition: all 0.3s;
+}
+
+.maps-link:hover {
+    background: #d2e3fc;
+    transform: translateY(-1px);
+}
+
+.detail-note {
+    margin-top: 20px;
+    padding: 10px;
+    background: #fff3cd;
+    border-left: 4px solid #ffc107;
+    border-radius: 4px;
+}
+
+.detail-note small {
+    color: #856404;
+    font-size: 13px;
+}
+
+/* カレンダーイベントに場所アイコンを表示 */
+.fc-event-title {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+    .detail-row {
+        flex-direction: column;
+    }
+    
+    .detail-label {
+        margin-bottom: 5px;
+    }
+    
+    .maps-link {
+        display: block;
+        margin-left: 0;
+        margin-top: 5px;
+        text-align: center;
+    }
+}

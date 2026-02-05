@@ -1,4 +1,4 @@
-// 子供の設定（名前を変更）
+// 子供の設定
 const kidsConfig = {
     kid1: { name: '尚貴', color: '#FF6B6B' },
     kid2: { name: '豪貴', color: '#4ECDC4' },
@@ -14,7 +14,7 @@ let currentEvent = null;
 const STORAGE_KEY = 'kidsCalendarEvents';
 const ICAL_URLS_KEY = 'kidsCalendarIcalUrls';
 const DATA_VERSION_KEY = 'kidsCalendarDataVersion';
-const CURRENT_DATA_VERSION = '2.0'; // データバージョン
+const CURRENT_DATA_VERSION = '2.0';
 
 // 初期化
 document.addEventListener('DOMContentLoaded', function() {
@@ -36,13 +36,10 @@ function migrateData() {
     if (currentVersion !== CURRENT_DATA_VERSION) {
         console.log('データをマイグレーション中...');
         
-        // 古いイベントデータを取得
         const events = loadEvents();
         
         if (events && events.length > 0) {
-            // タイトルから名前を削除
             const migratedEvents = events.map(event => {
-                // タイトルから「太郎:」「花子:」「次郎:」などを削除
                 let newTitle = event.title;
                 
                 // 古い名前パターンを削除
@@ -52,9 +49,16 @@ function migrateData() {
                     newTitle = newTitle.replace(pattern, '');
                 });
                 
-                // originalTitleも更新
+                // 場所アイコンも削除（再生成のため）
+                newTitle = newTitle.replace(/\s*📍.*$/, '');
+                
                 if (event.extendedProps && event.extendedProps.originalTitle) {
                     event.extendedProps.originalTitle = newTitle;
+                }
+                
+                // 場所情報がある場合は再追加
+                if (event.extendedProps && event.extendedProps.location) {
+                    newTitle = `${newTitle} 📍${event.extendedProps.location}`;
                 }
                 
                 return {
@@ -63,12 +67,10 @@ function migrateData() {
                 };
             });
             
-            // マイグレーション済みデータを保存
             saveEvents(migratedEvents);
             console.log(`${migratedEvents.length}件のイベントをマイグレーションしました`);
         }
         
-        // バージョンを更新
         localStorage.setItem(DATA_VERSION_KEY, CURRENT_DATA_VERSION);
         console.log('マイグレーション完了');
     }
@@ -126,20 +128,24 @@ function initEventListeners() {
         document.getElementById('syncPanel').classList.toggle('hidden');
     });
 
-    // データクリア機能（新規追加）
+    // データクリア機能
     const clearDataBtn = document.getElementById('clearDataBtn');
     if (clearDataBtn) {
         clearDataBtn.addEventListener('click', clearAllData);
     }
 
     // モーダルクローズ
-    document.querySelector('.close').addEventListener('click', closeModal);
+    document.querySelector('#eventModal .close').addEventListener('click', closeModal);
     
     // モーダル外クリックで閉じる
     window.addEventListener('click', (e) => {
         const modal = document.getElementById('eventModal');
+        const detailsModal = document.getElementById('eventDetailsModal');
         if (e.target === modal) {
             closeModal();
+        }
+        if (e.target === detailsModal) {
+            closeEventDetailsModal();
         }
     });
 
@@ -150,7 +156,7 @@ function initEventListeners() {
     document.getElementById('deleteEventBtn').addEventListener('click', deleteEvent);
 }
 
-// 全データをクリア（新規追加）
+// 全データをクリア
 function clearAllData() {
     if (confirm('⚠️ 警告：全てのデータ（予定、URL設定）を削除します。\nこの操作は取り消せません。本当に削除しますか？')) {
         if (confirm('本当によろしいですか？削除されたデータは復元できません。')) {
@@ -158,12 +164,10 @@ function clearAllData() {
             localStorage.removeItem(ICAL_URLS_KEY);
             localStorage.removeItem(DATA_VERSION_KEY);
             
-            // カレンダーをリフレッシュ
             if (calendar) {
                 calendar.removeAllEvents();
             }
             
-            // URL入力欄をリセット
             ['kid1', 'kid2', 'kid3'].forEach(kidId => {
                 const container = document.getElementById(`${kidId}-urls`);
                 container.innerHTML = '';
@@ -215,13 +219,12 @@ function openModal(event = null) {
         document.getElementById('modalTitle').textContent = '予定を編集';
         document.getElementById('eventKid').value = event.extendedProps.kid;
         
-        // タイトルから名前を除去して表示
-        let displayTitle = event.title;
-        const kidName = kidsConfig[event.extendedProps.kid].name;
-        const pattern = new RegExp(`^${kidName}:\\s*`, 'g');
-        displayTitle = displayTitle.replace(pattern, '');
+        // originalTitleを使用（場所アイコンなし）
+        let displayTitle = event.extendedProps.originalTitle || event.title;
+        displayTitle = displayTitle.replace(/\s*📍.*$/, '');
         
         document.getElementById('eventTitle').value = displayTitle;
+        document.getElementById('eventLocation').value = event.extendedProps.location || '';
         document.getElementById('eventStart').value = formatDateTimeLocal(event.start);
         document.getElementById('eventEnd').value = formatDateTimeLocal(event.end || event.start);
         document.getElementById('eventDescription').value = event.extendedProps.description || '';
@@ -241,19 +244,26 @@ function closeModal() {
     currentEvent = null;
 }
 
-// フォーム送信処理（名前を含めない）
+// フォーム送信処理
 function handleFormSubmit(e) {
     e.preventDefault();
     
     const kid = document.getElementById('eventKid').value;
-    const title = document.getElementById('eventTitle').value; // 名前を付けない
+    const title = document.getElementById('eventTitle').value;
+    const location = document.getElementById('eventLocation').value;
     const start = document.getElementById('eventStart').value;
     const end = document.getElementById('eventEnd').value;
     const description = document.getElementById('eventDescription').value;
     
+    // タイトルに場所を追加
+    let displayTitle = title;
+    if (location) {
+        displayTitle = `${title} 📍${location}`;
+    }
+    
     const eventData = {
         id: currentEvent ? currentEvent.id : Date.now().toString(),
-        title: title, // 名前なしでそのまま保存
+        title: displayTitle,
         start: start,
         end: end,
         backgroundColor: kidsConfig[kid].color,
@@ -261,6 +271,7 @@ function handleFormSubmit(e) {
         extendedProps: {
             kid: kid,
             description: description,
+            location: location,
             originalTitle: title
         }
     };
@@ -268,13 +279,11 @@ function handleFormSubmit(e) {
     const events = loadEvents();
     
     if (currentEvent) {
-        // 更新
         const index = events.findIndex(e => e.id === currentEvent.id);
         if (index !== -1) {
             events[index] = eventData;
         }
     } else {
-        // 新規追加
         events.push(eventData);
     }
     
@@ -303,12 +312,80 @@ function deleteEvent() {
 
 // イベントクリック処理
 function handleEventClick(info) {
-    // iCal同期イベントは編集不可
+    // iCal同期イベントは詳細表示
     if (info.event.extendedProps.fromIcal) {
-        alert('iCalから同期されたイベントは編集できません。');
+        showEventDetails(info.event);
         return;
     }
     openModal(info.event);
+}
+
+// イベント詳細を表示
+function showEventDetails(event) {
+    const modal = document.getElementById('eventDetailsModal');
+    
+    // タイトル
+    const title = event.extendedProps.originalTitle || event.title.replace(/\s*📍.*$/, '');
+    document.getElementById('detailTitle').textContent = title;
+    
+    // 子供の名前
+    const kidName = kidsConfig[event.extendedProps.kid].name;
+    document.getElementById('detailKid').textContent = kidName;
+    document.getElementById('detailKid').style.color = kidsConfig[event.extendedProps.kid].color;
+    document.getElementById('detailKid').style.fontWeight = 'bold';
+    
+    // 開始日時
+    const startDate = new Date(event.start);
+    document.getElementById('detailStart').textContent = formatDateTime(startDate);
+    
+    // 終了日時
+    const endDate = event.end ? new Date(event.end) : startDate;
+    document.getElementById('detailEnd').textContent = formatDateTime(endDate);
+    
+    // 場所
+    const locationElement = document.getElementById('detailLocation');
+    const locationRow = document.getElementById('detailLocationRow');
+    if (event.extendedProps.location) {
+        locationElement.textContent = event.extendedProps.location;
+        locationRow.style.display = 'flex';
+        
+        // Google Maps リンク
+        const mapsLink = document.getElementById('detailMapsLink');
+        const encodedLocation = encodeURIComponent(event.extendedProps.location);
+        mapsLink.href = `https://www.google.com/maps/search/?api=1&query=${encodedLocation}`;
+    } else {
+        locationRow.style.display = 'none';
+    }
+    
+    // 説明
+    const descriptionElement = document.getElementById('detailDescription');
+    const descriptionRow = document.getElementById('detailDescriptionRow');
+    if (event.extendedProps.description) {
+        descriptionElement.textContent = event.extendedProps.description;
+        descriptionRow.style.display = 'flex';
+    } else {
+        descriptionRow.style.display = 'none';
+    }
+    
+    modal.classList.remove('hidden');
+}
+
+// イベント詳細モーダルを閉じる
+function closeEventDetailsModal() {
+    document.getElementById('eventDetailsModal').classList.add('hidden');
+}
+
+// 日時フォーマット（詳細表示用）
+function formatDateTime(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
+    const weekday = weekdays[date.getDay()];
+    
+    return `${year}年${month}月${day}日（${weekday}） ${hours}:${minutes}`;
 }
 
 // 日付クリック処理
@@ -372,7 +449,6 @@ function saveIcalUrls() {
         kid3: []
     };
     
-    // 各子供のURL入力欄から値を取得
     ['kid1', 'kid2', 'kid3'].forEach(kidId => {
         const inputs = document.querySelectorAll(`#${kidId}-urls .ical-url-input`);
         inputs.forEach(input => {
@@ -392,19 +468,15 @@ function loadIcalUrls() {
     if (stored) {
         const urls = JSON.parse(stored);
         
-        // 各子供のURLを復元
         ['kid1', 'kid2', 'kid3'].forEach(kidId => {
             const urlList = urls[kidId] || [];
             const container = document.getElementById(`${kidId}-urls`);
             
-            // 既存の入力欄をクリア
             container.innerHTML = '';
             
-            // URLがない場合は1つだけ入力欄を表示
             if (urlList.length === 0) {
                 addUrlInput(kidId);
             } else {
-                // 保存されたURLを復元
                 urlList.forEach((url, index) => {
                     addUrlInput(kidId, url, index);
                 });
@@ -436,7 +508,6 @@ function removeUrl(kidId, index) {
     const container = document.getElementById(`${kidId}-urls`);
     const inputGroups = container.querySelectorAll('.sync-input-group');
     
-    // 最後の1つは削除しない
     if (inputGroups.length <= 1) {
         alert('最低1つのURL入力欄は必要です。');
         return;
@@ -444,7 +515,6 @@ function removeUrl(kidId, index) {
     
     inputGroups[index].remove();
     
-    // インデックスを振り直し
     const remainingGroups = container.querySelectorAll('.sync-input-group');
     remainingGroups.forEach((group, newIndex) => {
         const input = group.querySelector('.ical-url-input');
