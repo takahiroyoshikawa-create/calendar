@@ -111,7 +111,27 @@
                         </select>
                     </div>
                 </div>
-
+<!-- クラウド同期設定 -->
+                <div class="cloud-sync-settings">
+                    <h4>☁️ クラウド同期設定</h4>
+                    <p style="font-size: 13px; color: #666; margin-bottom: 10px;">
+                        全デバイス間でリアルタイムにデータを同期します
+                    </p>
+                    <div class="cloud-sync-controls">
+                        <label class="switch">
+                            <input type="checkbox" id="cloudSyncToggle">
+                            <span class="slider"></span>
+                        </label>
+                        <label for="cloudSyncToggle">クラウド同期を有効にする</label>
+                        <span id="cloudSyncStatus" style="margin-left: 10px; font-weight: 600;">無効</span>
+                    </div>
+                    <div class="cloud-sync-info">
+                        <small>
+                            ℹ️ クラウド同期を有効にすると、PC・スマホ・タブレットなど全てのデバイスで自動的にデータが同期されます。<br>
+                            パスワードをハッシュ化したIDで管理されるため、セキュリティも安全です。
+                        </small>
+                    </div>
+                </div>
                 <!-- ファイルインポート機能 -->
                 <div class="file-import-section">
                     <h4>📁 .icsファイルをインポート</h4>
@@ -316,5 +336,23 @@
     <script src="auth.js"></script>
     <script src="ical-sync.js"></script>
     <script src="app.js"></script>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    
+    <!-- 既存のスクリプト -->
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
+    <script src='https://cdn.jsdelivr.net/npm/ical.js@1.5.0/build/ical.min.js'></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    
+    <!-- 新規追加 -->
+    <script src="firebase-config.js"></script>
+    <script src="cloud-sync.js"></script>
+    
+    <script src="auth.js"></script>
+    <script src="ical-sync.js"></script>
+    <script src="app.js"></script>
+</body>
 </body>
 </html>

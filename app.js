@@ -180,10 +180,14 @@ function clearAllData() {
     }
 }
 
-// イベント読み込み
-function loadEvents() {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? JSON.parse(stored) : [];
+// イベント保存
+function saveEvents(events) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(events));
+    
+    // クラウド同期が有効な場合、アップロード
+    if (typeof uploadToCloud === 'function' && cloudSyncEnabled) {
+        uploadToCloud();
+    }
 }
 
 // イベント保存

@@ -1033,3 +1033,37 @@ input:checked + .slider:before {
 .mb-20 {
     margin-bottom: 20px;
 }
+
+/* クラウド同期設定 */
+.cloud-sync-settings {
+    background: #e3f2fd;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    border: 2px solid #2196F3;
+}
+
+.cloud-sync-settings h4 {
+    margin-bottom: 10px;
+    color: #1976d2;
+}
+
+.cloud-sync-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.cloud-sync-info {
+    background: white;
+    padding: 10px;
+    border-radius: 5px;
+    border-left: 4px solid #2196F3;
+}
+
+.cloud-sync-info small {
+    color: #555;
+    font-size: 12px;
+    line-height: 1.5;
+}
