@@ -6,7 +6,7 @@
     <title>子供の予定管理カレンダー</title>
     <link rel="stylesheet" href="style.css">
     <!-- FullCalendar CSS -->
-    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css' rel='stylesheet' />
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css' rel='stylesheet' />
 </head>
 <body>
     <!-- ログイン画面 -->
@@ -83,6 +83,15 @@
             <button class="kid-tab" data-kid="kid3" style="border-left: 4px solid #95E1D3;">光貴</button>
         </div>
 
+        <!-- 予定追加ボタン -->
+        <div class="action-buttons">
+            <button id="addEventBtn" class="btn-primary">➕ 予定を追加</button>
+            <button id="refreshCalendarBtn" class="btn-secondary">🔄 カレンダー再読み込み</button>
+        </div>
+
+        <!-- カレンダー -->
+        <div id="calendar"></div>
+
         <!-- iCal同期設定 -->
         <div class="sync-section">
             <button id="toggleSync" class="btn-secondary">🔄 iCal同期設定</button>
@@ -111,7 +120,8 @@
                         </select>
                     </div>
                 </div>
-<!-- クラウド同期設定 -->
+
+                <!-- クラウド同期設定 -->
                 <div class="cloud-sync-settings">
                     <h4>☁️ クラウド同期設定</h4>
                     <p style="font-size: 13px; color: #666; margin-bottom: 10px;">
@@ -132,6 +142,7 @@
                         </small>
                     </div>
                 </div>
+
                 <!-- ファイルインポート機能 -->
                 <div class="file-import-section">
                     <h4>📁 .icsファイルをインポート</h4>
@@ -191,6 +202,31 @@
                     </div>
                     <button class="btn-add-url" onclick="addUrlInput('kid3')">➕ URLを追加</button>
                 </div>
+
+                <!-- データエクスポート/インポート -->
+                <div class="data-management-section">
+                    <h4>💾 データ管理（デバイス間同期）</h4>
+                    <p style="font-size: 13px; color: #666; margin-bottom: 10px;">
+                        データをエクスポートして他のデバイスにインポートできます
+                    </p>
+                    <div class="data-management-actions">
+                        <button onclick="exportAllData()" class="btn-export">
+                            📤 データをエクスポート
+                        </button>
+                        <div class="file-input-wrapper">
+                            <input type="file" id="dataImportInput" accept=".json" onchange="importAllData(event)">
+                            <label for="dataImportInput" class="btn-import">
+                                📥 データをインポート
+                            </label>
+                        </div>
+                    </div>
+                    <div class="data-info">
+                        <small>
+                            ℹ️ エクスポートしたファイルには、全ての予定とURL設定が含まれます。<br>
+                            他のデバイスでインポートすることで、同じデータを使用できます。
+                        </small>
+                    </div>
+                </div>
                 
                 <div class="sync-actions">
                     <button onclick="syncAllCalendars()" class="btn-sync-all">🔄 全て同期</button>
@@ -229,14 +265,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- 予定追加ボタン -->
-        <div class="action-buttons">
-            <button id="addEventBtn" class="btn-primary">➕ 予定を追加</button>
-        </div>
-
-        <!-- カレンダー -->
-        <div id="calendar"></div>
 
         <!-- 予定追加/編集モーダル -->
         <div id="eventModal" class="modal hidden">
@@ -328,31 +356,23 @@
     </div>
 
     <!-- FullCalendar JS -->
-    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
+    
     <!-- iCal.js for parsing iCal files -->
     <script src='https://cdn.jsdelivr.net/npm/ical.js@1.5.0/build/ical.min.js'></script>
+    
     <!-- CryptoJS for password hashing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-    <script src="auth.js"></script>
-    <script src="ical-sync.js"></script>
-    <script src="app.js"></script>
-
+    
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     
-    <!-- 既存のスクリプト -->
-    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
-    <script src='https://cdn.jsdelivr.net/npm/ical.js@1.5.0/build/ical.min.js'></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-    
-    <!-- 新規追加 -->
+    <!-- アプリケーションスクリプト（順序重要！） -->
     <script src="firebase-config.js"></script>
-    <script src="cloud-sync.js"></script>
-    
     <script src="auth.js"></script>
     <script src="ical-sync.js"></script>
+    <script src="cloud-sync.js"></script>
     <script src="app.js"></script>
-</body>
 </body>
 </html>
