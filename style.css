@@ -1067,3 +1067,101 @@ input:checked + .slider:before {
     font-size: 12px;
     line-height: 1.5;
 }
+
+/* カレンダー */
+#calendar {
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+    min-height: 600px;
+    position: relative;
+}
+
+.fc {
+    font-family: inherit;
+    min-height: 500px;
+}
+
+.fc .fc-view-harness {
+    min-height: 500px;
+}
+
+/* 強制的に表示 */
+.fc-view-harness-active {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* モバイル対応 */
+@media (max-width: 768px) {
+    #calendar {
+        padding: 10px;
+        min-height: 400px;
+        border-radius: 10px;
+    }
+    
+    .fc {
+        min-height: 350px;
+    }
+    
+    .fc .fc-view-harness {
+        min-height: 350px;
+    }
+    
+    /* FullCalendarのツールバー */
+    .fc-toolbar {
+        flex-direction: column !important;
+        gap: 10px;
+        align-items: stretch !important;
+    }
+    
+    .fc-toolbar-chunk {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+    }
+    
+    .fc-button {
+        font-size: 12px !important;
+        padding: 6px 12px !important;
+    }
+    
+    .fc-toolbar-title {
+        font-size: 16px !important;
+        text-align: center;
+    }
+    
+    /* イベント表示 */
+    .fc-event {
+        font-size: 11px !important;
+        padding: 1px 3px !important;
+    }
+    
+    /* 日付セル */
+    .fc-daygrid-day-number {
+        font-size: 12px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    #calendar {
+        padding: 5px;
+        min-height: 300px;
+    }
+    
+    .fc {
+        min-height: 250px;
+    }
+    
+    .fc-toolbar-title {
+        font-size: 14px !important;
+    }
+    
+    .fc-button {
+        font-size: 10px !important;
+        padding: 4px 8px !important;
+    }
+}
